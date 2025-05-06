@@ -280,8 +280,7 @@
                 <div class="chart-nav">
                     <div class="chart-title">Precio de Bitcoin (BTC)</div>
                     <div class="chart-types">
-                        <button class="chart-type-btn active" id="candleBtn">Velas</button>
-                        <button class="chart-type-btn" id="lineBtn">Línea</button>
+                        <button class="chart-type-btn active" id="lineBtn">Línea</button>
                     </div>
                 </div>
                 <canvas id="priceChart"></canvas>
@@ -325,27 +324,11 @@
             };
             
             let currentChart = null;
-            let chartType = 'candlestick';
             let historicalData = [];
             let predictionData = [];
             
             // Iniciar la carga de datos
             loadData();
-            
-            // Configurar botones del gráfico
-            document.getElementById('candleBtn').addEventListener('click', () => {
-                chartType = 'candlestick';
-                updateChart();
-                document.getElementById('candleBtn').classList.add('active');
-                document.getElementById('lineBtn').classList.remove('active');
-            });
-            
-            document.getElementById('lineBtn').addEventListener('click', () => {
-                chartType = 'line';
-                updateChart();
-                document.getElementById('lineBtn').classList.add('active');
-                document.getElementById('candleBtn').classList.remove('active');
-            });
             
             async function loadData() {
                 try {
@@ -411,24 +394,16 @@
                 changeElement.className = 'metric-value ' + (change >= 0 ? 'positive' : 'negative');
                 
                 // Crear gráfico
-                updateChart();
+                createLineChart();
             }
             
-            function updateChart() {
+            function createLineChart() {
                 const ctx = document.getElementById('priceChart').getContext('2d');
                 
                 if (currentChart) {
                     currentChart.destroy();
                 }
                 
-                if (chartType === 'candlestick') {
-                    createCandlestickChart(ctx);
-                } else {
-                    createLineChart(ctx);
-                }
-            }
-            
-            function createLineChart(ctx) {
                 const allDates = [...historicalData.map(d => d.date), ...predictionData.map(d => d.date)];
                 const historicalPrices = [...historicalData.map(d => d.price), ...Array(predictionData.length).fill(null)];
                 const predictionPrices = [...Array(historicalData.length).fill(null), ...predictionData.map(d => d.price)];
@@ -461,80 +436,6 @@
                     },
                     options: getChartOptions()
                 });
-            }
-            
-            function createCandlestickChart(ctx) {
-                // Para el gráfico de velas necesitaríamos datos OHLC (Open, High, Low, Close)
-                // Como solo tenemos precio de cierre, simularemos datos OHLC
-                const ohlcData = historicalData.map(item => ({
-                    x: item.date,
-                    o: item.price * 0.998,
-                    h: item.price * 1.002,
-                    l: item.price * 0.995,
-                    c: item.price
-                }));
-                
-                const allDates = [...historicalData.map(d => d.date), ...predictionData.map(d => d.date)];
-                const predictionPrices = [...Array(historicalData.length).fill(null), ...predictionData.map(d => d.price)];
-                
-                currentChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: allDates,
-                        datasets: [
-                            {
-                                label: 'Predicción',
-                                data: predictionPrices,
-                                borderColor: 'rgba(76, 201, 240, 1)',
-                                borderWidth: 2,
-                                borderDash: [5, 5],
-                                tension: 0.1,
-                                pointRadius: 0,
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: getChartOptions()
-                });
-                
-                // Agregar velas como anotaciones (aproximación)
-                ohlcData.slice(-30).forEach((candle, idx) => {
-                    const isUp = candle.c >= candle.o;
-                    
-                    currentChart.options.plugins.annotation.annotations[`candle${idx}`] = {
-                        type: 'box',
-                        xMin: idx - 0.4,
-                        xMax: idx + 0.4,
-                        yMin: isUp ? candle.o : candle.c,
-                        yMax: isUp ? candle.c : candle.o,
-                        backgroundColor: isUp ? 'rgba(22, 199, 132, 0.7)' : 'rgba(234, 57, 67, 0.7)',
-                        borderColor: isUp ? 'rgba(22, 199, 132, 1)' : 'rgba(234, 57, 67, 1)',
-                        borderWidth: 1
-                    };
-                    
-                    // Líneas de high/low
-                    currentChart.options.plugins.annotation.annotations[`lineHigh${idx}`] = {
-                        type: 'line',
-                        xMin: idx,
-                        xMax: idx,
-                        yMin: isUp ? candle.c : candle.o,
-                        yMax: candle.h,
-                        borderColor: isUp ? 'rgba(22, 199, 132, 1)' : 'rgba(234, 57, 67, 1)',
-                        borderWidth: 1
-                    };
-                    
-                    currentChart.options.plugins.annotation.annotations[`lineLow${idx}`] = {
-                        type: 'line',
-                        xMin: idx,
-                        xMax: idx,
-                        yMin: isUp ? candle.o : candle.c,
-                        yMax: candle.l,
-                        borderColor: isUp ? 'rgba(22, 199, 132, 1)' : 'rgba(234, 57, 67, 1)',
-                        borderWidth: 1
-                    };
-                });
-                
-                currentChart.update();
             }
             
             function getChartOptions() {
