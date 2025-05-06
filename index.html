@@ -1,253 +1,566 @@
 <!DOCTYPE html>
 <html lang="es">
-<!-- [Todo el código HTML anterior permanece igual hasta el script] -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Predictor Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #f7931a;
+            --primary-dark: #e07e0c;
+            --secondary: #4cc9f0;
+            --green: #16c784;
+            --red: #ea3943;
+            --bg-dark: #0a0b0e;
+            --bg-darker: #07080a;
+            --card-bg: #131722;
+            --text-main: #eaecef;
+            --text-secondary: #a1a7bb;
+            --border-color: #2a2e39;
+        }
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // RUTAS MODIFICADAS PARA ARCHIVOS EN LA MISMA CARPETA
-        const DATA_PATHS = {
-            historical: 'bitcoin.csv',
-            predictions: 'predictions.csv'
-        };
-        
-        // API para el precio actual
-        const API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true';
-        
-        let currentChart = null;
-        let historicalData = [];
-        let predictionData = [];
-        let updateInterval;
-        
-        // Iniciar la carga de datos
-        loadData();
-        
-        async function loadData() {
-            try {
-                // Cargar ambos archivos CSV
-                const historicalText = await fetchData(DATA_PATHS.historical);
-                const predictionsText = await fetchData(DATA_PATHS.predictions);
-                
-                // Procesar datos
-                historicalData = parseCSV(historicalText, true);
-                predictionData = parseCSV(predictionsText, false);
-                
-                // Mostrar datos iniciales
-                displayInitialData(historicalData, predictionData);
-                
-                // Obtener y mostrar el precio actual desde la API
-                await updateCurrentPrice();
-                
-                // Ocultar loading y mostrar contenido
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-                
-                // Iniciar la actualización periódica del precio actual
-                startPriceUpdates();
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('loading').innerHTML = `
-                    <i class="fas fa-exclamation-triangle" style="color: var(--red); font-size: 24px; margin-bottom: 10px;"></i>
-                    <p>Error cargando los datos. Verifica la consola (F12) para más detalles.</p>
-                `;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(247, 147, 26, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(76, 201, 240, 0.1) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .timeframe-selector {
+            display: flex;
+            gap: 10px;
+        }
+
+        .time-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .time-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px 0;
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .chart-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .chart-types {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chart-type-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .chart-type-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 450px !important;
+        }
+
+        .metrics-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .metric-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .positive {
+            color: var(--green);
+        }
+
+        .negative {
+            color: var(--red);
+        }
+
+        .prediction-info {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .prediction-info h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        .prediction-info p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            .metrics-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            canvas {
+                height: 350px !important;
             }
         }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fab fa-bitcoin"></i>
+                    <h1>Bitcoin Predictor</h1>
+                </div>
+                <div class="timeframe-selector">
+                    <button class="time-btn active">2 años</button>
+                </div>
+            </div>
+        </header>
         
-        async function fetchData(path) {
-            const response = await fetch(path);
-            if (!response.ok) {
-                throw new Error(`Error al cargar ${path}: ${response.status}`);
-            }
-            return await response.text();
-        }
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Cargando datos del mercado...</p>
+        </div>
         
-        function parseCSV(csvText, isHistorical) {
-            const lines = csvText.split('\n')
-                .filter(line => line.trim() !== '')
-                .slice(isHistorical ? 3 : 1);
+        <div id="content" style="display: none;">
+            <div class="chart-container">
+                <div class="chart-nav">
+                    <div class="chart-title">Precio de Bitcoin (BTC)</div>
+                    <div class="chart-types">
+                        <button class="chart-type-btn active" id="lineBtn">Línea</button>
+                    </div>
+                </div>
+                <canvas id="priceChart"></canvas>
+            </div>
             
-            return lines.map(line => {
-                const [date, value] = line.split(',');
-                return {
-                    date: date.trim(),
-                    price: parseFloat(value)
-                };
-            }).filter(item => !isNaN(item.price));
-        }
-        
-        function displayInitialData(historical, predictions) {
-            // Obtener últimos valores locales para predicción
-            const future = predictions[predictions.length - 1];
+            <div class="metrics-container">
+                <div class="metric-card">
+                    <div class="metric-title">Precio Actual</div>
+                    <div id="currentPrice" class="metric-value">-</div>
+                    <div class="metric-subtitle">Último valor histórico</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Predicción Final</div>
+                    <div id="futurePrice" class="metric-value">-</div>
+                    <div class="metric-subtitle">Proyección a 2 años</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-title">Variación Estimada</div>
+                    <div id="priceChange" class="metric-value">-</div>
+                    <div class="metric-subtitle">Cambio porcentual</div>
+                </div>
+            </div>
             
-            // Mostrar valores iniciales (el precio actual se actualizará después)
-            document.getElementById('futurePrice').textContent = formatCurrency(future.price);
-            
-            // Crear gráfico
-            createLineChart();
-        }
+            <div class="prediction-info">
+                <h3><i class="fas fa-info-circle"></i> Sobre esta predicción</h3>
+                <p>Este modelo utiliza algoritmos avanzados de machine learning para predecir el precio futuro de Bitcoin basado en datos históricos. La línea de predicción muestra la tendencia esperada para los próximos 2 años.</p>
+            </div>
+        </div>
         
-        async function updateCurrentPrice() {
-            try {
-                const response = await fetch(API_URL);
-                if (!response.ok) {
-                    throw new Error(`Error en la API: ${response.status}`);
-                }
-                const data = await response.json();
-                
-                const currentPrice = data.bitcoin.usd;
-                const priceChange24h = data.bitcoin.usd_24h_change;
-                
-                // Actualizar el precio actual en la interfaz
-                document.getElementById('currentPrice').textContent = formatCurrency(currentPrice);
-                
-                // Actualizar la variación estimada (usando el último precio local como referencia)
-                const futurePriceElement = document.getElementById('futurePrice');
-                const futurePrice = parseFloat(futurePriceElement.textContent.replace(/[^0-9.-]+/g,""));
-                
-                if (!isNaN(futurePrice)) {
-                    const change = ((futurePrice - currentPrice) / currentPrice * 100).toFixed(2);
-                    const changeElement = document.getElementById('priceChange');
-                    changeElement.textContent = (change >= 0 ? '+' : '') + change + '%';
-                    changeElement.className = 'metric-value ' + (change >= 0 ? 'positive' : 'negative');
-                }
-                
-            } catch (error) {
-                console.error('Error al actualizar el precio:', error);
-                // Podrías mostrar un mensaje de error o reintentar
-            }
-        }
-        
-        function startPriceUpdates() {
-            // Actualizar inmediatamente y luego cada 10 segundos
-            updateInterval = setInterval(updateCurrentPrice, 10000);
-        }
-        
-        function createLineChart() {
-            const ctx = document.getElementById('priceChart').getContext('2d');
-            
-            if (currentChart) {
-                currentChart.destroy();
-            }
-            
-            const allDates = [...historicalData.map(d => d.date), ...predictionData.map(d => d.date)];
-            const historicalPrices = [...historicalData.map(d => d.price), ...Array(predictionData.length).fill(null)];
-            const predictionPrices = [...Array(historicalData.length).fill(null), ...predictionData.map(d => d.price)];
-            
-            currentChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: allDates,
-                    datasets: [
-                        {
-                            label: 'Histórico',
-                            data: historicalPrices,
-                            borderColor: 'rgba(247, 147, 26, 1)',
-                            borderWidth: 2,
-                            tension: 0.1,
-                            pointRadius: 0,
-                            fill: false
-                        },
-                        {
-                            label: 'Predicción',
-                            data: predictionPrices,
-                            borderColor: 'rgba(76, 201, 240, 1)',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            tension: 0.1,
-                            pointRadius: 0,
-                            fill: false
-                        }
-                    ]
-                },
-                options: getChartOptions()
-            });
-        }
-        
-        function getChartOptions() {
-            return {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            color: 'rgba(234, 236, 239, 0.9)',
-                            font: {
-                                family: 'Inter',
-                                size: 12
-                            },
-                            padding: 20
-                        }
-                    },
-                    tooltip: {
-                        mode: 'index',
-                        intersect: false,
-                        backgroundColor: 'rgba(10, 11, 14, 0.9)',
-                        titleColor: 'rgba(247, 147, 26, 1)',
-                        bodyColor: 'rgba(234, 236, 239, 0.9)',
-                        borderColor: 'rgba(42, 46, 57, 1)',
-                        borderWidth: 1,
-                        padding: 12,
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += formatCurrency(context.parsed.y);
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            color: 'rgba(42, 46, 57, 0.5)',
-                            drawOnChartArea: false
-                        },
-                        ticks: {
-                            color: 'rgba(161, 167, 187, 0.8)',
-                            maxRotation: 0,
-                            autoSkip: true,
-                            maxTicksLimit: 10
-                        }
-                    },
-                    y: {
-                        grid: {
-                            color: 'rgba(42, 46, 57, 0.5)'
-                        },
-                        ticks: {
-                            color: 'rgba(161, 167, 187, 0.8)',
-                            callback: function(value) {
-                                return '$' + value.toLocaleString();
-                            }
-                        }
-                    }
-                },
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
-                }
+        <footer>
+            <p>© 2023 Bitcoin Predictor</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // RUTAS MODIFICADAS PARA ARCHIVOS EN LA MISMA CARPETA
+            const DATA_PATHS = {
+                historical: 'bitcoin.csv',
+                predictions: 'predictions.csv'
             };
-        }
-        
-        function formatCurrency(value) {
-            return '$' + value.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-        
-        // Limpiar el intervalo cuando la página se cierre
-        window.addEventListener('beforeunload', function() {
-            if (updateInterval) {
-                clearInterval(updateInterval);
+            
+            // API para el precio actual
+            const API_URL = 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true';
+            
+            let currentChart = null;
+            let historicalData = [];
+            let predictionData = [];
+            let updateInterval;
+            
+            // Iniciar la carga de datos
+            loadData();
+            
+            async function loadData() {
+                try {
+                    // Cargar ambos archivos CSV
+                    const historicalText = await fetchData(DATA_PATHS.historical);
+                    const predictionsText = await fetchData(DATA_PATHS.predictions);
+                    
+                    // Procesar datos
+                    historicalData = parseCSV(historicalText, true);
+                    predictionData = parseCSV(predictionsText, false);
+                    
+                    // Mostrar datos iniciales
+                    displayInitialData(historicalData, predictionData);
+                    
+                    // Obtener y mostrar el precio actual desde la API
+                    await updateCurrentPrice();
+                    
+                    // Ocultar loading y mostrar contenido
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
+                    
+                    // Iniciar la actualización periódica del precio actual
+                    startPriceUpdates();
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById('loading').innerHTML = `
+                        <i class="fas fa-exclamation-triangle" style="color: var(--red); font-size: 24px; margin-bottom: 10px;"></i>
+                        <p>Error cargando los datos. Verifica la consola (F12) para más detalles.</p>
+                    `;
+                }
             }
+            
+            async function fetchData(path) {
+                const response = await fetch(path);
+                if (!response.ok) {
+                    throw new Error(`Error al cargar ${path}: ${response.status}`);
+                }
+                return await response.text();
+            }
+            
+            function parseCSV(csvText, isHistorical) {
+                const lines = csvText.split('\n')
+                    .filter(line => line.trim() !== '')
+                    .slice(isHistorical ? 3 : 1);
+                
+                return lines.map(line => {
+                    const [date, value] = line.split(',');
+                    return {
+                        date: date.trim(),
+                        price: parseFloat(value)
+                    };
+                }).filter(item => !isNaN(item.price));
+            }
+            
+            function displayInitialData(historical, predictions) {
+                // Obtener últimos valores locales para predicción
+                const future = predictions[predictions.length - 1];
+                
+                // Mostrar valores iniciales (el precio actual se actualizará después)
+                document.getElementById('futurePrice').textContent = formatCurrency(future.price);
+                
+                // Crear gráfico
+                createLineChart();
+            }
+            
+            async function updateCurrentPrice() {
+                try {
+                    const response = await fetch(API_URL);
+                    if (!response.ok) {
+                        throw new Error(`Error en la API: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    
+                    const currentPrice = data.bitcoin.usd;
+                    const priceChange24h = data.bitcoin.usd_24h_change;
+                    
+                    // Actualizar el precio actual en la interfaz
+                    document.getElementById('currentPrice').textContent = formatCurrency(currentPrice);
+                    
+                    // Actualizar la variación estimada (usando el último precio local como referencia)
+                    const futurePriceElement = document.getElementById('futurePrice');
+                    const futurePrice = parseFloat(futurePriceElement.textContent.replace(/[^0-9.-]+/g,""));
+                    
+                    if (!isNaN(futurePrice)) {
+                        const change = ((futurePrice - currentPrice) / currentPrice * 100).toFixed(2);
+                        const changeElement = document.getElementById('priceChange');
+                        changeElement.textContent = (change >= 0 ? '+' : '') + change + '%';
+                        changeElement.className = 'metric-value ' + (change >= 0 ? 'positive' : 'negative');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error al actualizar el precio:', error);
+                    // Podrías mostrar un mensaje de error o reintentar
+                }
+            }
+            
+            function startPriceUpdates() {
+                // Actualizar inmediatamente y luego cada 10 segundos
+                updateInterval = setInterval(updateCurrentPrice, 10000);
+            }
+            
+            function createLineChart() {
+                const ctx = document.getElementById('priceChart').getContext('2d');
+                
+                if (currentChart) {
+                    currentChart.destroy();
+                }
+                
+                const allDates = [...historicalData.map(d => d.date), ...predictionData.map(d => d.date)];
+                const historicalPrices = [...historicalData.map(d => d.price), ...Array(predictionData.length).fill(null)];
+                const predictionPrices = [...Array(historicalData.length).fill(null), ...predictionData.map(d => d.price)];
+                
+                currentChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: allDates,
+                        datasets: [
+                            {
+                                label: 'Histórico',
+                                data: historicalPrices,
+                                borderColor: 'rgba(247, 147, 26, 1)',
+                                borderWidth: 2,
+                                tension: 0.1,
+                                pointRadius: 0,
+                                fill: false
+                            },
+                            {
+                                label: 'Predicción',
+                                data: predictionPrices,
+                                borderColor: 'rgba(76, 201, 240, 1)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                tension: 0.1,
+                                pointRadius: 0,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: getChartOptions()
+                });
+            }
+            
+            function getChartOptions() {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: 'rgba(234, 236, 239, 0.9)',
+                                font: {
+                                    family: 'Inter',
+                                    size: 12
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(10, 11, 14, 0.9)',
+                            titleColor: 'rgba(247, 147, 26, 1)',
+                            bodyColor: 'rgba(234, 236, 239, 0.9)',
+                            borderColor: 'rgba(42, 46, 57, 1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += formatCurrency(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: 'rgba(42, 46, 57, 0.5)',
+                                drawOnChartArea: false
+                            },
+                            ticks: {
+                                color: 'rgba(161, 167, 187, 0.8)',
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 10
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(42, 46, 57, 0.5)'
+                            },
+                            ticks: {
+                                color: 'rgba(161, 167, 187, 0.8)',
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                };
+            }
+            
+            function formatCurrency(value) {
+                return '$' + value.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+            }
+            
+            // Limpiar el intervalo cuando la página se cierre
+            window.addEventListener('beforeunload', function() {
+                if (updateInterval) {
+                    clearInterval(updateInterval);
+                }
+            });
         });
-    });
-</script>
-</body>
-</html>
+    </script>
+    </body>
+    </html>
