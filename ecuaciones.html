@@ -3,225 +3,404 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulación de Crecimiento Poblacional Determinista</title>
+    <title>Modelo Matemático | Bitcoin Predictor Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-color: #e0e0e0;
-            --primary-color: #bb86fc;
-            --primary-hover: #9a67ea;
-            --secondary-color: #03dac6;
-            --border-color: #333;
-            --info-bg: #2d2d2d;
+            --primary: #f7931a;
+            --primary-dark: #e07e0c;
+            --secondary: #4cc9f0;
+            --green: #16c784;
+            --red: #ea3943;
+            --bg-dark: #0a0b0e;
+            --bg-darker: #07080a;
+            --card-bg: #131722;
+            --text-main: #eaecef;
+            --text-secondary: #a1a7bb;
+            --border-color: #2a2e39;
         }
-        
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 900px;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(247, 147, 26, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(76, 201, 240, 0.1) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            line-height: 1.6;
-            background-color: var(--bg-color);
-            color: var(--text-color);
         }
-        
-        h1 {
-            color: var(--primary-color);
-            text-align: center;
+
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
             margin-bottom: 30px;
-            font-weight: 300;
-            letter-spacing: 0.5px;
         }
-        
-        .controls {
-            background-color: var(--card-bg);
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+        }
+
+        .nav-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .nav-btn i {
+            font-size: 14px;
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .chart-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 450px !important;
+        }
+
+        .controls {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-card {
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-        
-        .control-group {
-            margin-bottom: 5px;
+
+        .control-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--secondary-color);
+
+        .control-title i {
+            color: var(--secondary);
         }
-        
+
         input {
             width: 100%;
             padding: 10px;
-            background-color: var(--bg-color);
+            background: var(--bg-darker);
             border: 1px solid var(--border-color);
             border-radius: 6px;
-            color: var(--text-color);
-            font-size: 14px;
-            transition: border 0.3s;
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
         }
-        
+
         input:focus {
             outline: none;
-            border-color: var(--primary-color);
+            border-color: var(--primary);
         }
-        
+
         .button-container {
             display: flex;
-            justify-content: center;
             gap: 15px;
-            margin: 25px 0;
+            margin: 20px 0;
         }
-        
-        button {
-            background-color: var(--primary-color);
-            color: #000;
+
+        .action-btn {
+            background: var(--primary);
+            color: white;
             border: none;
             padding: 12px 24px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 500;
-            transition: all 0.3s;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        
-        button:hover {
-            background-color: var(--primary-hover);
+
+        .action-btn:hover {
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
-        
-        button:active {
-            transform: translateY(0);
+
+        .action-btn.secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
         }
-        
-        #reset {
-            background-color: #555;
-            color: white;
+
+        .action-btn.secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
-        
-        #reset:hover {
-            background-color: #666;
-        }
-        
-        .chart-container {
-            width: 100%;
-            height: 500px;
-            margin: 30px 0;
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+        .info-card {
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
-        }
-        
-        .info {
-            margin-top: 30px;
+            border-radius: 12px;
             padding: 20px;
-            background-color: var(--info-bg);
-            border-radius: 10px;
-            border-left: 4px solid var(--secondary-color);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
         }
-        
-        .info h3 {
-            color: var(--secondary-color);
-            margin-top: 0;
-            font-weight: 500;
+
+        .info-card h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        
-        .info p, .info li {
-            color: var(--text-color);
-            opacity: 0.9;
+
+        .info-card h3 i {
+            color: var(--secondary);
         }
-        
-        .info ul {
+
+        .info-card p, .info-card li {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .info-card ul {
             padding-left: 20px;
         }
-        
-        /* Estilos para el gráfico */
-        canvas {
-            width: 100% !important;
-            height: 100% !important;
+
+        .equation {
+            background: var(--bg-darker);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            font-size: 16px;
+            color: var(--primary);
+            border-left: 3px solid var(--primary);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .nav-buttons {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            canvas {
+                height: 350px !important;
+            }
+            
+            .button-container {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Simulación de Crecimiento Poblacional Determinista</h1>
-    
-    <div class="controls">
-        <div class="control-group">
-            <label for="r">Tasa de crecimiento (r):</label>
-            <input type="number" id="r" step="0.01" value="0.1">
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fab fa-bitcoin"></i>
+                    <h1>Bitcoin Predictor</h1>
+                </div>
+                <div class="nav-buttons">
+                    <a href="index.html" class="nav-btn">
+                        <i class="fas fa-chart-line"></i> Gráfico
+                    </a>
+                    <a href="ecuaciones.html" class="nav-btn active">
+                        <i class="fas fa-calculator"></i> Modelo
+                    </a>
+                </div>
+            </div>
+        </header>
+        
+        <div class="chart-container">
+            <div class="chart-nav">
+                <div class="chart-title">Simulación del Modelo Matemático</div>
+            </div>
+            <canvas id="modelChart"></canvas>
         </div>
         
-        <div class="control-group">
-            <label for="K">Capacidad de carga (K):</label>
-            <input type="number" id="K" step="1" value="1000">
+        <div class="controls">
+            <div class="control-card">
+                <div class="control-title">
+                    <i class="fas fa-chart-line"></i> Tasa de crecimiento (r)
+                </div>
+                <input type="number" id="r" step="0.01" value="0.1">
+            </div>
+            
+            <div class="control-card">
+                <div class="control-title">
+                    <i class="fas fa-weight-hanging"></i> Capacidad de carga (K)
+                </div>
+                <input type="number" id="K" step="1" value="1000">
+            </div>
+            
+            <div class="control-card">
+                <div class="control-title">
+                    <i class="fas fa-skull"></i> Tasa de mortalidad (α)
+                </div>
+                <input type="number" id="alpha" step="0.01" value="0.05">
+            </div>
+            
+            <div class="control-card">
+                <div class="control-title">
+                    <i class="fas fa-users"></i> Población inicial (P₀)
+                </div>
+                <input type="number" id="P0" step="1" value="10">
+            </div>
+            
+            <div class="control-card">
+                <div class="control-title">
+                    <i class="fas fa-calendar-alt"></i> Días a simular
+                </div>
+                <input type="number" id="days" step="1" value="365">
+            </div>
         </div>
         
-        <div class="control-group">
-            <label for="alpha">Tasa de mortalidad (α):</label>
-            <input type="number" id="alpha" step="0.01" value="0.05">
+        <div class="button-container">
+            <button id="simulate" class="action-btn">
+                <i class="fas fa-play"></i> Simular
+            </button>
+            <button id="reset" class="action-btn secondary">
+                <i class="fas fa-redo"></i> Reiniciar
+            </button>
         </div>
         
-        <div class="control-group">
-            <label for="P0">Población inicial (P₀):</label>
-            <input type="number" id="P0" step="1" value="10">
+        <div class="info-card">
+            <h3>
+                <i class="fas fa-info-circle"></i> Ecuación del Modelo
+            </h3>
+            <div class="equation">dP/dt = r·P·(1 - P/K) - α·P</div>
+            <p>Donde:</p>
+            <ul>
+                <li><strong>P</strong>: Tamaño de la población (precio en nuestro modelo)</li>
+                <li><strong>r</strong>: Tasa de crecimiento intrínseco</li>
+                <li><strong>K</strong>: Capacidad de carga del ambiente (precio máximo sostenible)</li>
+                <li><strong>α</strong>: Tasa de mortalidad (factores de reducción de precio)</li>
+            </ul>
+            <p>El método de Euler discretiza la ecuación como:</p>
+            <div class="equation">P(t+Δt) = P(t) + [r·P(t)·(1 - P(t)/K) - α·P(t)]Δt</div>
+            <p>donde Δt = 1 día en esta simulación. Este modelo adaptado nos ayuda a entender la dinámica potencial del precio de Bitcoin considerando factores de crecimiento y limitaciones del mercado.</p>
         </div>
         
-        <div class="control-group">
-            <label for="days">Días a simular:</label>
-            <input type="number" id="days" step="1" value="365">
-        </div>
-    </div>
-    
-    <div class="button-container">
-        <button id="simulate">Simular</button>
-        <button id="reset">Reiniciar</button>
-    </div>
-    
-    <div class="chart-container">
-        <canvas id="chart"></canvas>
-    </div>
-    
-    <div class="info">
-        <h3>Ecuación simulada:</h3>
-        <p>dP/dt = r·P·(1 - P/K) - α·P</p>
-        <p>Donde:</p>
-        <ul>
-            <li>P: Tamaño de la población</li>
-            <li>r: Tasa de crecimiento intrínseco</li>
-            <li>K: Capacidad de carga del ambiente</li>
-            <li>α: Tasa de mortalidad</li>
-        </ul>
-        <p>El método de Euler discretiza la ecuación como:</p>
-        <p>P(t+Δt) = P(t) + [r·P(t)·(1 - P(t)/K) - α·P(t)]Δt</p>
-        <p>donde Δt = 1 día en esta simulación.</p>
+        <footer>
+            <p>© 2023 Bitcoin Predictor Pro - Modelo Matemático</p>
+        </footer>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Configuración del tema oscuro para Chart.js
-            Chart.defaults.color = '#e0e0e0';
-            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+            // Configuración del tema para Chart.js
+            Chart.defaults.color = '#a1a7bb';
+            Chart.defaults.borderColor = 'rgba(42, 46, 57, 0.5)';
             
             // Elementos del DOM
             const simulateBtn = document.getElementById('simulate');
             const resetBtn = document.getElementById('reset');
-            const chartCanvas = document.getElementById('chart');
+            const chartCanvas = document.getElementById('modelChart');
             
             let chart = null;
-            let simulationData = null;
             
             // Inicializar gráfico
             function initChart() {
@@ -233,8 +412,8 @@
                 
                 // Crear gradiente para la línea del gráfico
                 const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                gradient.addColorStop(0, 'rgba(187, 134, 252, 0.8)');
-                gradient.addColorStop(1, 'rgba(3, 218, 198, 0.2)');
+                gradient.addColorStop(0, 'rgba(247, 147, 26, 0.8)');
+                gradient.addColorStop(1, 'rgba(76, 201, 240, 0.2)');
                 
                 chart = new Chart(chartCanvas, {
                     type: 'line',
@@ -245,52 +424,69 @@
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Tiempo (días)',
-                                    color: '#e0e0e0'
-                                },
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.1)'
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Población (P)',
-                                    color: '#e0e0e0'
-                                },
-                                min: 0,
-                                grid: {
-                                    color: 'rgba(255, 255, 255, 0.1)'
-                                }
-                            }
-                        },
                         plugins: {
                             legend: {
+                                position: 'top',
                                 labels: {
-                                    color: '#e0e0e0'
-                                }
-                            },
-                            title: {
-                                display: true,
-                                text: 'Simulación de Crecimiento Poblacional Determinista',
-                                color: '#e0e0e0',
-                                font: {
-                                    size: 16
+                                    color: 'rgba(234, 236, 239, 0.9)',
+                                    font: {
+                                        family: 'Inter',
+                                        size: 12
+                                    },
+                                    padding: 20
                                 }
                             },
                             tooltip: {
                                 mode: 'index',
                                 intersect: false,
-                                backgroundColor: 'rgba(30, 30, 30, 0.9)',
-                                titleColor: '#bb86fc',
-                                bodyColor: '#e0e0e0',
-                                borderColor: '#333',
-                                borderWidth: 1
+                                backgroundColor: 'rgba(10, 11, 14, 0.9)',
+                                titleColor: 'rgba(247, 147, 26, 1)',
+                                bodyColor: 'rgba(234, 236, 239, 0.9)',
+                                borderColor: 'rgba(42, 46, 57, 1)',
+                                borderWidth: 1,
+                                padding: 12,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += context.parsed.y.toFixed(2);
+                                        }
+                                        return label;
+                                    }
+                                }
                             }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Tiempo (días)',
+                                    color: '#a1a7bb'
+                                },
+                                grid: {
+                                    color: 'rgba(42, 46, 57, 0.5)',
+                                    drawOnChartArea: false
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Valor del Modelo',
+                                    color: '#a1a7bb'
+                                },
+                                min: 0,
+                                grid: {
+                                    color: 'rgba(42, 46, 57, 0.5)'
+                                }
+                            }
+                        },
+                        interaction: {
+                            mode: 'nearest',
+                            axis: 'x',
+                            intersect: false
                         }
                     }
                 });
@@ -340,18 +536,18 @@
                 }
                 
                 // Ejecutar simulación
-                simulationData = simulateTrajectory(r, K, alpha, P0, days);
+                const simulationData = simulateTrajectory(r, K, alpha, P0, days);
                 
                 // Configurar gradiente para la línea del gráfico
                 const ctx = chartCanvas.getContext('2d');
                 const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                gradient.addColorStop(0, 'rgba(187, 134, 252, 0.8)');
-                gradient.addColorStop(1, 'rgba(3, 218, 198, 0.2)');
+                gradient.addColorStop(0, 'rgba(247, 147, 26, 0.8)');
+                gradient.addColorStop(1, 'rgba(76, 201, 240, 0.2)');
                 
                 // Actualizar gráfico
                 chart.data.labels = simulationData.timePoints;
                 chart.data.datasets = [{
-                    label: 'Población',
+                    label: 'Simulación del Modelo',
                     data: simulationData.P,
                     borderColor: gradient,
                     backgroundColor: 'rgba(0, 0, 0, 0)',
@@ -360,7 +556,7 @@
                     pointRadius: 0,
                     fill: {
                         target: 'origin',
-                        above: 'rgba(3, 218, 198, 0.1)'
+                        above: 'rgba(76, 201, 240, 0.1)'
                     }
                 }];
                 
@@ -369,8 +565,14 @@
             
             // Reiniciar simulación
             resetBtn.addEventListener('click', function() {
+                // Restablecer valores por defecto
+                document.getElementById('r').value = '0.1';
+                document.getElementById('K').value = '1000';
+                document.getElementById('alpha').value = '0.05';
+                document.getElementById('P0').value = '10';
+                document.getElementById('days').value = '365';
+                
                 initChart();
-                simulationData = null;
             });
             
             // Inicializar gráfico al cargar la página
