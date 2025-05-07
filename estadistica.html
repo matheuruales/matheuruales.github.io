@@ -8,6 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.0.0"></script>
+    <!-- Añadimos el plugin de zoom -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
@@ -129,6 +131,7 @@
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            position: relative;
         }
 
         .chart-nav {
@@ -240,6 +243,32 @@
             border-top: 1px solid var(--border-color);
         }
 
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .chart-control-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 5px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .chart-control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .chart-control-btn i {
+            margin-right: 5px;
+        }
+
         @media (max-width: 768px) {
             .metrics-container {
                 grid-template-columns: 1fr;
@@ -285,6 +314,13 @@
                     </div>
                 </div>
                 <canvas id="priceChart"></canvas>
+                <div class="chart-controls">
+                    <button class="chart-control-btn" id="zoomInBtn"><i class="fas fa-search-plus"></i> Zoom In</button>
+                    <button class="chart-control-btn" id="zoomOutBtn"><i class="fas fa-search-minus"></i> Zoom Out</button>
+                    <button class="chart-control-btn" id="resetZoomBtn"><i class="fas fa-sync-alt"></i> Reset</button>
+                    <button class="chart-control-btn" id="panLeftBtn"><i class="fas fa-arrow-left"></i> Izquierda</button>
+                    <button class="chart-control-btn" id="panRightBtn"><i class="fas fa-arrow-right"></i> Derecha</button>
+                </div>
             </div>
             
             <div class="metrics-container">
@@ -308,6 +344,7 @@
             <div class="prediction-info">
                 <h3><i class="fas fa-info-circle"></i> Sobre esta predicción</h3>
                 <p>Este modelo utiliza algoritmos avanzados de machine learning para predecir el precio futuro de Bitcoin basado en datos históricos. La línea de predicción muestra la tendencia esperada para los próximos 2 años.</p>
+                <p><strong>Interacción con el gráfico:</strong> Usa la rueda del mouse para hacer zoom, haz clic y arrastra para moverte por el gráfico, o utiliza los botones de control.</p>
             </div>
         </div>
         
@@ -357,6 +394,9 @@
                     
                     // Iniciar la actualización periódica del precio actual
                     startPriceUpdates();
+                    
+                    // Configurar eventos para los controles del gráfico
+                    setupChartControls();
                 } catch (error) {
                     console.error('Error:', error);
                     document.getElementById('loading').innerHTML = `
@@ -364,6 +404,46 @@
                         <p>Error cargando los datos. Verifica la consola (F12) para más detalles.</p>
                     `;
                 }
+            }
+            
+            function setupChartControls() {
+                document.getElementById('zoomInBtn').addEventListener('click', function() {
+                    if (currentChart) {
+                        currentChart.zoom(1.1);
+                    }
+                });
+                
+                document.getElementById('zoomOutBtn').addEventListener('click', function() {
+                    if (currentChart) {
+                        currentChart.zoom(0.9);
+                    }
+                });
+                
+                document.getElementById('resetZoomBtn').addEventListener('click', function() {
+                    if (currentChart) {
+                        currentChart.resetZoom();
+                    }
+                });
+                
+                document.getElementById('panLeftBtn').addEventListener('click', function() {
+                    if (currentChart) {
+                        const xAxis = currentChart.scales.x;
+                        const step = (xAxis.max - xAxis.min) * 0.2;
+                        currentChart.pan({
+                            x: -step
+                        }, undefined, 'default');
+                    }
+                });
+                
+                document.getElementById('panRightBtn').addEventListener('click', function() {
+                    if (currentChart) {
+                        const xAxis = currentChart.scales.x;
+                        const step = (xAxis.max - xAxis.min) * 0.2;
+                        currentChart.pan({
+                            x: step
+                        }, undefined, 'default');
+                    }
+                });
             }
             
             async function fetchData(path) {
@@ -472,7 +552,8 @@
                             }
                         ]
                     },
-                    options: getChartOptions()
+                    options: getChartOptions(),
+                    plugins: [ChartZoom] // Añadimos el plugin de zoom
                 });
             }
             
@@ -512,6 +593,30 @@
                                     }
                                     return label;
                                 }
+                            }
+                        },
+                        // Configuración del plugin de zoom
+                        zoom: {
+                            pan: {
+                                enabled: true,
+                                mode: 'xy',
+                                modifierKey: 'ctrl',
+                            },
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                },
+                                pinch: {
+                                    enabled: true
+                                },
+                                mode: 'xy',
+                                onZoomComplete: function({chart}) {
+                                    // Esta función se llama cuando el zoom se completa
+                                }
+                            },
+                            limits: {
+                                x: {min: 'original', max: 'original'},
+                                y: {min: 'original', max: 'original'}
                             }
                         }
                     },
@@ -563,5 +668,5 @@
             });
         });
     </script>
-    </body>
-    </html>
+</body>
+</html>
