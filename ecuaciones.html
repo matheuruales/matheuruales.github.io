@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Crecimiento Poblacional Determinista</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --primary-color: #bb86fc;
+            --primary-hover: #9a67ea;
+            --secondary-color: #03dac6;
+            --border-color: #333;
+            --info-bg: #2d2d2d;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: 0.5px;
+        }
+        
+        .controls {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+        
+        .control-group {
+            margin-bottom: 5px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--secondary-color);
+        }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-color);
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        #reset {
+            background-color: #555;
+            color: white;
+        }
+        
+        #reset:hover {
+            background-color: #666;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 500px;
+            margin: 30px 0;
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+        
+        .info {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--info-bg);
+            border-radius: 10px;
+            border-left: 4px solid var(--secondary-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .info h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            font-weight: 500;
+        }
+        
+        .info p, .info li {
+            color: var(--text-color);
+            opacity: 0.9;
+        }
+        
+        .info ul {
+            padding-left: 20px;
+        }
+        
+        /* Estilos para el gráfico */
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simulación de Crecimiento Poblacional Determinista</h1>
+    
+    <div class="controls">
+        <div class="control-group">
+            <label for="r">Tasa de crecimiento (r):</label>
+            <input type="number" id="r" step="0.01" value="0.1">
+        </div>
+        
+        <div class="control-group">
+            <label for="K">Capacidad de carga (K):</label>
+            <input type="number" id="K" step="1" value="1000">
+        </div>
+        
+        <div class="control-group">
+            <label for="alpha">Tasa de mortalidad (α):</label>
+            <input type="number" id="alpha" step="0.01" value="0.05">
+        </div>
+        
+        <div class="control-group">
+            <label for="P0">Población inicial (P₀):</label>
+            <input type="number" id="P0" step="1" value="10">
+        </div>
+        
+        <div class="control-group">
+            <label for="days">Días a simular:</label>
+            <input type="number" id="days" step="1" value="365">
+        </div>
+    </div>
+    
+    <div class="button-container">
+        <button id="simulate">Simular</button>
+        <button id="reset">Reiniciar</button>
+    </div>
+    
+    <div class="chart-container">
+        <canvas id="chart"></canvas>
+    </div>
+    
+    <div class="info">
+        <h3>Ecuación simulada:</h3>
+        <p>dP/dt = r·P·(1 - P/K) - α·P</p>
+        <p>Donde:</p>
+        <ul>
+            <li>P: Tamaño de la población</li>
+            <li>r: Tasa de crecimiento intrínseco</li>
+            <li>K: Capacidad de carga del ambiente</li>
+            <li>α: Tasa de mortalidad</li>
+        </ul>
+        <p>El método de Euler discretiza la ecuación como:</p>
+        <p>P(t+Δt) = P(t) + [r·P(t)·(1 - P(t)/K) - α·P(t)]Δt</p>
+        <p>donde Δt = 1 día en esta simulación.</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configuración del tema oscuro para Chart.js
+            Chart.defaults.color = '#e0e0e0';
+            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+            
+            // Elementos del DOM
+            const simulateBtn = document.getElementById('simulate');
+            const resetBtn = document.getElementById('reset');
+            const chartCanvas = document.getElementById('chart');
+            
+            let chart = null;
+            let simulationData = null;
+            
+            // Inicializar gráfico
+            function initChart() {
+                if (chart) {
+                    chart.destroy();
+                }
+                
+                const ctx = chartCanvas.getContext('2d');
+                
+                // Crear gradiente para la línea del gráfico
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(187, 134, 252, 0.8)');
+                gradient.addColorStop(1, 'rgba(3, 218, 198, 0.2)');
+                
+                chart = new Chart(chartCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: []
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Tiempo (días)',
+                                    color: '#e0e0e0'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Población (P)',
+                                    color: '#e0e0e0'
+                                },
+                                min: 0,
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#e0e0e0'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Simulación de Crecimiento Poblacional Determinista',
+                                color: '#e0e0e0',
+                                font: {
+                                    size: 16
+                                }
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: 'rgba(30, 30, 30, 0.9)',
+                                titleColor: '#bb86fc',
+                                bodyColor: '#e0e0e0',
+                                borderColor: '#333',
+                                borderWidth: 1
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Función para simular la trayectoria determinista
+            function simulateTrajectory(r, K, alpha, P0, days) {
+                const P = [P0];
+                const timePoints = [0];
+                
+                for (let t = 1; t <= days; t++) {
+                    const currentP = P[P.length - 1];
+                    const dt = 1; // Paso de tiempo de 1 día
+                    
+                    // Término determinista: [r*P*(1 - P/K) - alpha*P]*dt
+                    const change = (r * currentP * (1 - currentP / K) - alpha * currentP) * dt;
+                    
+                    // Nuevo valor de P
+                    const newP = currentP + change;
+                    
+                    // Asegurar que P no sea negativo
+                    P.push(Math.max(0, newP));
+                    timePoints.push(t);
+                }
+                
+                return { timePoints, P };
+            }
+            
+            // Ejecutar simulación
+            simulateBtn.addEventListener('click', function() {
+                // Obtener parámetros
+                const r = parseFloat(document.getElementById('r').value);
+                const K = parseFloat(document.getElementById('K').value);
+                const alpha = parseFloat(document.getElementById('alpha').value);
+                const P0 = parseFloat(document.getElementById('P0').value);
+                const days = parseInt(document.getElementById('days').value);
+                
+                // Validar entradas
+                if ([r, K, alpha, P0, days].some(isNaN)) {
+                    alert('Por favor ingrese valores válidos para todos los parámetros.');
+                    return;
+                }
+                
+                // Inicializar gráfico si es necesario
+                if (!chart) {
+                    initChart();
+                }
+                
+                // Ejecutar simulación
+                simulationData = simulateTrajectory(r, K, alpha, P0, days);
+                
+                // Configurar gradiente para la línea del gráfico
+                const ctx = chartCanvas.getContext('2d');
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(187, 134, 252, 0.8)');
+                gradient.addColorStop(1, 'rgba(3, 218, 198, 0.2)');
+                
+                // Actualizar gráfico
+                chart.data.labels = simulationData.timePoints;
+                chart.data.datasets = [{
+                    label: 'Población',
+                    data: simulationData.P,
+                    borderColor: gradient,
+                    backgroundColor: 'rgba(0, 0, 0, 0)',
+                    borderWidth: 3,
+                    tension: 0.1,
+                    pointRadius: 0,
+                    fill: {
+                        target: 'origin',
+                        above: 'rgba(3, 218, 198, 0.1)'
+                    }
+                }];
+                
+                chart.update();
+            });
+            
+            // Reiniciar simulación
+            resetBtn.addEventListener('click', function() {
+                initChart();
+                simulationData = null;
+            });
+            
+            // Inicializar gráfico al cargar la página
+            initChart();
+        });
+    </script>
+</body>
+</html>
