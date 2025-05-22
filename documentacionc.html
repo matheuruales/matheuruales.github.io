@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proyecto Final - Predicción Bitcoin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #f7931a;
+            --primary-dark: #e07e0c;
+            --secondary: #4cc9f0;
+            --green: #16c784;
+            --red: #ea3943;
+            --bg-dark: #0a0b0e;
+            --bg-darker: #07080a;
+            --card-bg: #131722;
+            --text-main: #eaecef;
+            --text-secondary: #a1a7bb;
+            --border-color: #2a2e39;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(247, 147, 26, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(76, 201, 240, 0.1) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title i {
+            color: var(--secondary);
+        }
+
+        .content-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .content-title {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .content-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .equation {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 18px;
+            color: var(--text-main);
+            background: var(--bg-darker);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .team-members {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .member-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .member-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .member-role {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .result-title {
+            font-size: 16px;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .graph-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .result-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+        
+        .image-caption {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            font-style: italic;
+        }
+
+        .graph-placeholder {
+            width: 100%;
+            height: 250px;
+            background-color: var(--bg-dark);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            border: 1px dashed var(--border-color);
+        }
+
+        .code-link {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .code-link:hover {
+            background: var(--primary-dark);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 768px) {
+            .team-members {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fab fa-bitcoin"></i>
+                    <h1>Modelado del Bitcoin con Ecuaciones Diferenciales</h1>
+                </div>
+            </div>
+        </header>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-users"></i>
+                Equipo de Investigación
+            </h2>
+            
+            <div class="team-members">
+                <div class="member-card">
+                    <div class="member-name">Jonathan Matheu Ruales Galvis</div>
+                    <div class="member-role"></div>
+                </div>
+                <div class="member-card">
+                    <div class="member-name">Alejandro España Meza</div>
+                    <div class="member-role"></div>
+                </div>
+                <div class="member-card">
+                    <div class="member-name">Felipe Narvaez Gomez</div>
+                    <div class="member-role"></div>
+                </div>
+            </div>
+            
+            <div class="content-card">
+                <div class="content-title">Universidad Cooperativa de Colombia</div>
+                <div class="content-text">Facultad de Ingeniería de Software</div>
+                <div class="content-text">Ecuaciones Diferenciales</div>
+                <div class="content-text">Fecha: 22/05/2025</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-lightbulb"></i>
+                Introducción
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-text">
+                    El mercado de criptomonedas, y particularmente el Bitcoin, presenta características únicas que lo hacen especialmente interesante para el modelado matemático. Su naturaleza de alta volatilidad y la sensibilidad a eventos macroeconómicos y regulatorios como lo son, noticias, o presuntos informes por altos mandos, crean patrones de comportamiento que difieren significativamente de los activos financieros tradicionales.
+                </div>
+                
+                <div class="content-title" style="margin-top: 15px;">Problema de investigación:</div>
+                <div class="content-text">
+                    ¿Cómo podemos modelar matemáticamente la dinámica del precio del Bitcoin considerando tanto su crecimiento potencial como su inherente volatilidad?
+                </div>
+                
+                <div class="content-title" style="margin-top: 15px;">Hipótesis:</div>
+                <div class="content-text">
+                    Un modelo híbrido que combine:
+                    <ul style="margin-top: 10px; margin-left: 20px; color: var(--text-secondary);">
+                        <li>Un componente determinista basado en crecimiento logístico</li>
+                        <li>Un componente estocástico que capture la volatilidad</li>
+                    </ul>
+                    Puede representar adecuadamente la dinámica de precios observada empíricamente.
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-bullseye"></i>
+                Objetivos
+            </h2>
+            
+            <div class="content-card">
+                <ul style="margin-left: 20px; color: var(--text-secondary);">
+                    <li>Desarrollar un modelo matemático para simular el precio de Bitcoin.</li>
+                    <li>Implementar el modelo numéricamente usando el método de Euler-Maruyama.</li>
+                    <li>Analizar la sensibilidad del modelo a los parámetros.</li>
+                    <li>Evaluar las limitaciones del modelo y sugerir posibles mejoras.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-square-root-alt"></i>
+                Modelado Matemático
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-text">
+                    La ecuación base es una modificación del modelo logístico:
+                </div>
+                
+                <div class="equation">
+                    𝑑𝑃/𝑑𝑡 = 𝑟𝑃(1 − 𝑃/𝐾) − 𝑎𝑃
+                </div>
+                
+                <div class="content-text">
+                    Donde:
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li><strong>P (Precio):</strong> Representa el precio de la criptomoneda en un momento dado t.</li>
+                        <li><strong>r (Tasa de crecimiento intrínseco):</strong> Refleja la tendencia natural del precio a crecer en ausencia de limitaciones.</li>
+                        <li><strong>K (Precio máximo sostenible):</strong> Representa el precio máximo teórico que la criptomoneda puede alcanzar en un ciclo de mercado dado.</li>
+                        <li><strong>α (Tasa de amortiguamiento):</strong> Representa la influencia de factores que reducen el precio de la criptomoneda.</li>
+                    </ul>
+                </div>
+                
+                <div class="content-title" style="margin-top: 15px;">¿Por qué elegimos una modificación al modelo logístico?</div>
+                <div class="content-text">
+                    El precio de un activo como Bitcoin no crece de forma lineal ni constante. Más bien, sigue un comportamiento típicamente:
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>Exponencial en sus inicios (Cuando hay adopción masiva o euforia del mercado)</li>
+                        <li>Se frena o estabiliza cuando el mercado se satura o se encuentra con barreras naturales</li>
+                        <li>Puede presentar correcciones psicológicas de precio</li>
+                        <li>Puede presentar correcciones fuertes o caídas abruptas por factores externos</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-calculator"></i>
+                Metodología de Solución
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-text">
+                    Para resolver nuestra ecuación diferencial de primer orden nos guiaremos de la solución de la que conocemos, la ecuación logística, con el cual usaremos el método de EDOS SEPARABLES.
+                </div>
+                
+                <div class="content-title" style="margin-top: 15px;">SOLUCIÓN ANALÍTICA:</div>
+                <div class="content-text">
+                    <strong>PASO 1. Simplificación de la ecuación:</strong><br>
+                    Primero, simplificamos la ecuación:
+                </div>
+                
+                <div class="equation">
+                    𝑑𝑃/𝑑𝑡 = (𝑟 − 𝑎)𝑃 − (𝑟/𝐾)𝑃²
+                </div>
+                
+                <div class="content-text">
+                    <strong>PASO 2. Separación de variables:</strong><br>
+                    Esta es una ecuación diferencial de Bernoulli (o ecuación logística modificada), que puede resolverse por separación de variables.
+                </div>
+                
+                <div class="content-text">
+                    <strong>PASO 3: Descomposición en fracciones parciales.</strong><br>
+                    Para integrar el lado izquierdo, utilizamos descomposición en fracciones parciales.
+                </div>
+                
+                <div class="content-text">
+                    <strong>PASO 4. Integración.</strong><br>
+                    Integración ambos lados:
+                </div>
+                
+                <div class="equation">
+                    ∫ (1/𝑃 + 1/(𝑃∗ − 𝑃)) 𝑑𝑃 = ∫ (𝑟 − 𝑎)𝑑𝑡
+                </div>
+                
+                <div class="content-text">
+                    <strong>PASO 6. Despejar P(t):</strong><br>
+                    Aplicamos exponencial a ambos lados
+                </div>
+                
+                <div class="content-text">
+                    <strong>PASO 7: Forma final de la solución Analítica</strong>
+                </div>
+                
+                <div class="equation">
+                    𝑃(𝑡) = 𝑃₀𝑃∗ / (𝑃₀ + (𝑃∗ − 𝑃₀)𝑒^−(𝑟−𝑎)𝑡)
+                </div>
+                
+                <div class="content-title" style="margin-top: 15px;">SOLUCIÓN NUMÉRICA</div>
+                <div class="content-text">
+                    Utilizamos una solución numérica (como la que se implementa con el método de Euler en tu código) para graficar la ecuación porque, aunque tenemos una solución analítica general, sustituir la constante C₃ en la solución y simplificar la expresión resultante es algebraicamente complejo.
+                </div>
+                
+                <div class="content-text">
+                    El método de Euler-Maruyama es una extensión del método de Euler para ecuaciones diferenciales estocásticas, es decir, ecuaciones diferenciales que incluyen un término de ruido aleatorio.
+                </div>
+                
+                <div class="equation">
+                    𝑃(𝑡 + Δ𝑡) = 𝑃(𝑡) + [𝑟𝑃(𝑡)(1 − 𝑃(𝑡)/𝐾) − 𝑎𝑃(𝑡)]Δ𝑡
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-chart-line"></i>
+                Resultados
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-text">
+                    Utilizando el metodo de Euler que discretiza la ecuacion como:
+                </div>
+                
+                <div class="equation">
+                    𝑃(𝑡 + Δ𝑡) = 𝑃(𝑡) + [𝑟𝑃(𝑡)(1 − 𝑃(𝑡)/𝐾) − 𝑎𝑃(𝑡)]Δ𝑡
+                </div>
+                
+                <div class="content-text">
+                    Podemos obtener los siguientes resultados con los parámetros:
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>r = 0.2456 (Tasa de crecimiento)</li>
+                        <li>K = 10,000 (Precio máximo sostenible)</li>
+                        <li>α = 0.08 (Tasa de amortiguamiento)</li>
+                        <li>P₀ = 10 (Precio inicial)</li>
+                        <li>Días = 30</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="results-container">
+                <!-- Gráfico 1 - Solución Numérica -->
+                <div class="result-card">
+                    <div class="result-title">Solución Numérica</div>
+                    <div class="graph-container">
+                        <!-- Reemplaza con la ruta de tu imagen -->
+                        <img src="img/calculo/metodoNumerico.png" alt="Gráfico del Método Numérico" class="result-image">
+                        <div class="image-caption">Figura 1: Solución mediante método numérico</div>
+                    </div>
+                </div>
+                
+                <!-- Gráfico 2 - Solución Analítica -->
+                <div class="result-card">
+                    <div class="result-title">Solución Analítica</div>
+                    <div class="graph-container">
+                        <!-- Reemplaza con la ruta de tu imagen -->
+                        <img src="img/calculo/metodoAnalitico.png" alt="Gráfico del Método Analítico" class="result-image">
+                        <div class="image-caption">Figura 2: Solución analítica exacta</div>
+                    </div>
+                </div>
+                
+                <!-- Gráfico 3 - Comparación -->
+                <div class="result-card">
+                    <div class="result-title">Comparación de Métodos</div>
+                    <div class="graph-container">
+                        <!-- Reemplaza con la ruta de tu imagen -->
+                        <img src="img/calculo/comparacion.png" alt="Comparación entre ambos métodos" class="result-image">
+                        <div class="image-caption">Figura 3: Comparación entre métodos</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content-card" style="margin-top: 20px;">
+                <div class="content-title">Comparación con el método numérico:</div>
+                <div class="content-text">
+                    La principal diferencia en los resultados es la precisión. La solución analítica es, en teoría, la solución exacta de la ecuación diferencial. El método de Euler, al ser una aproximación, introduce un error de discretización. Este error se acumula a lo largo de la simulación, por lo que la diferencia entre la solución numérica y la analítica puede ser más notable en tiempos largos o cuando el paso de tiempo Δt es grande.
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-check-circle"></i>
+                Conclusiones
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-text">
+                    <strong>Interpretación física/matemática:</strong><br>
+                    El modelo captura la idea de un crecimiento limitado: La parte logística de la ecuación refleja que Bitcoin, como cualquier activo o incluso una población, no puede crecer indefinidamente. Eventualmente, factores como la saturación del mercado o la resistencia técnica limitarán su crecimiento.
+                </div>
+                
+                <div class="content-text" style="margin-top: 15px;">
+                    <strong>Limitaciones del modelo:</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>Demasiado simple para Bitcoin: Aunque la ecuación es más sofisticada que un simple crecimiento exponencial, sigue siendo demasiado simple para capturar toda la complejidad del mercado de Bitcoin.</li>
+                        <li>K es un misterio: Definir el precio máximo teórico K es casi imposible.</li>
+                        <li>El ruido no es tan simple: Asumir que el ruido sigue una distribución normal es una simplificación.</li>
+                        <li>El modelo no predice el futuro: Este modelo no te hará rico. Es una herramienta para entender posibles escenarios, pero no una bola de cristal.</li>
+                    </ul>
+                </div>
+                
+                <div class="content-text" style="margin-top: 15px;">
+                    En general, el modelo es un buen punto de partida para entender la dinámica del precio de Bitcoin. Pero para que sea realmente útil, habría que mejorarlo, incluir más variables, y ser muy cuidadoso al interpretar los resultados.
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-code"></i>
+                Anexos
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-text">
+                    Códigos fuente utilizados en el proyecto:
+                </div>
+                
+                <a href="https://github.com/FelipeING898/Grafica-Bitcoin-Modelo-Analitico" class="code-link" target="_blank">
+                    <i class="fab fa-github"></i> Código Método Analítico
+                </a>
+                
+                <a href="https://github.com/matheuruales/matheuruales.github.io/blob/main/ecuaciones.html" class="code-link" target="_blank" style="margin-left: 10px;">
+                    <i class="fab fa-github"></i> Código Método Numérico
+                </a>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 Proyecto Final - Ecuaciones Diferenciales | Universidad Cooperativa de Colombia</p>
+        </footer>
+    </div>
+</body>
+</html>
