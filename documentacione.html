@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRYPTO ANALITICS - Predicción Bitcoin con Machine Learning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #f7931a;
+            --primary-dark: #e07e0c;
+            --secondary: #4cc9f0;
+            --green: #16c784;
+            --red: #ea3943;
+            --bg-dark: #0a0b0e;
+            --bg-darker: #07080a;
+            --card-bg: #131722;
+            --text-main: #eaecef;
+            --text-secondary: #a1a7bb;
+            --border-color: #2a2e39;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(247, 147, 26, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(76, 201, 240, 0.1) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            color: var(--primary);
+            font-size: 28px;
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title i {
+            color: var(--secondary);
+        }
+
+        .content-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .content-title {
+            font-size: 18px;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .content-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .equation {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 18px;
+            color: var(--text-main);
+            background: var(--bg-darker);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .team-members {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .member-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .member-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .member-role {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: var(--bg-darker);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .result-title {
+            font-size: 16px;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .graph-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .result-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+        
+        .image-caption {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            font-style: italic;
+        }
+
+        .graph-placeholder {
+            width: 100%;
+            height: 250px;
+            background-color: var(--bg-dark);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            border: 1px dashed var(--border-color);
+        }
+
+        .code-link {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+
+        .code-link:hover {
+            background: var(--primary-dark);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 40px;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        ul {
+            margin-left: 20px;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .team-members {
+                grid-template-columns: 1fr;
+            }
+            
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fab fa-bitcoin"></i>
+                    <h1>CRYPTO ANALITICS - Predicción Bitcoin con Machine Learning</h1>
+                </div>
+            </div>
+        </header>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-users"></i>
+                Equipo de Investigación
+            </h2>
+            
+            <div class="team-members">
+                <div class="member-card">
+                    <div class="member-name">Alejandro España Meza</div>
+                </div>
+                <div class="member-card">
+                    <div class="member-name">Johnatan Matheu Ruales Galvis</div>
+                </div>
+                <div class="member-card">
+                    <div class="member-name">Felipe Narvaez Gómez</div>
+                </div>
+            </div>
+            
+            <div class="content-card">
+                <div class="content-title">Universidad Cooperativa de Colombia</div>
+                <div class="content-text">Ingeniería de software III semestre</div>
+                <div class="content-text">Profesor: Juan Pablo Granja Hinestrosa</div>
+                <div class="content-text">Fecha: 20/05/2025</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-lightbulb"></i>
+                Introducción
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-text">
+                    Este proyecto busca facilitar el proceso de las inversiones, más específicamente en la taza de valores de la moneda virtual Bitcoin. Para esto se plantea el uso de un modelo de IA entrenado con Machine Learning, el cual se entrenó con una base de datos de más de 4000 datos del precio que ha ido teniendo esta moneda a lo largo del tiempo.
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-bullseye"></i>
+                Objetivos
+            </h2>
+            
+            <div class="content-card">
+                <ul>
+                    <li>Aplicar fundamentos estadísticos en predicciones financieras</li>
+                    <li>Utilizar probabilidad condicional, teoremas de Bayes y diagramas de árbol para modelar el comportamiento del precio del Bitcoin, considerando su volatilidad y eventos del mercado.</li>
+                    <li>Desarrollar un modelo predictivo basado en Machine Learning con enfoque probabilístico.</li>
+                    <li>Implementar algoritmos que integren inferencia bayesiana para estimar la probabilidad de tendencias, dado un conjunto de datos históricos (más de 4000 registros).</li>
+                    <li>Demostrar la relación entre estadística bayesiana y Machine Learning</li>
+                    <li>Explicar cómo técnicas como el aprendizaje supervisado y la actualización de probabilidades (vía teorema de Bayes) mejoran la precisión del modelo frente a nuevos datos.</li>
+                    <li>Visualizar procesos probabilísticos con diagramas</li>
+                    <li>Emplear diagramas de árbol y gráficos estadísticos para representar las transiciones entre estados del precio (ej.: subida, bajada, estabilidad) y su dependencia temporal.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-chart-line"></i>
+                Metodología
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-title">1. Recolección y Procesamiento de Datos</div>
+                <div class="content-text">
+                    <strong>Fuente de datos:</strong> Se utilizó la base de datos histórica de Yahoo Finance (https://finance.yahoo.com/) con registros diarios del precio de Bitcoin (BTC-USD) en un rango de tiempo amplio (ej: últimos 5-10 años).
+                </div>
+                
+                <div class="content-title">Variables clave:</div>
+                <ul>
+                    <li>Fecha.</li>
+                    <li>Precio de cierre.</li>
+                    <li>Precio de apertura.</li>
+                    <li>Máximo y mínimo del día.</li>
+                    <li>Volumen de trading.</li>
+                </ul>
+                
+                <div class="content-title">Limpieza y preprocesamiento:</div>
+                <ul>
+                    <li>Eliminación de valores nulos o outliers.</li>
+                    <li>Normalización de datos para el entrenamiento del modelo.</li>
+                    <li>Feature engineering (ej: cálculo de medias móviles, RSI para enriquecer el dataset).</li>
+                </ul>
+                
+                <div class="content-title">2. Herramientas y Técnicas</div>
+                <div class="content-text">
+                    Para el análisis y modelado se emplearon las siguientes herramientas:
+                </div>
+                <ul>
+                    <li>Python con librerías como Pandas, NumPy, Matplotlib y Scikit-Learn.</li>
+                    <li>Modelos de Machine Learning para la predicción.</li>
+                    <li>Técnicas estadísticas para preprocesamiento, análisis exploratorio y evaluación del modelo.</li>
+                </ul>
+                
+                <div class="content-text">
+                    Las etapas aplicadas incluyen estadística descriptiva, ajuste y validación de distribuciones de probabilidad, inferencia estadística, análisis de regresión y simulación con variabilidad realista.
+                </div>
+                
+                <div class="content-title">Descripción del Conjunto de Datos</div>
+                <div class="content-text">
+                    El data set utilizado contiene información histórica diaria del precio de Bitcoin (BTC-USD) obtenida de Yahoo Finance, con las siguientes características:
+                </div>
+                <ul>
+                    <li>Período temporal: Desde [año inicial] hasta [año actual] (ej: 2014-2024).</li>
+                    <li>Variables principales:</li>
+                    <ul>
+                        <li>Fecha: Formato date time (AAAA-MM-DD).</li>
+                        <li>Precio de cierre ajustado: Valor más representativo para el análisis.</li>
+                        <li>Volumen de trading: Indicador de liquidez y actividad del mercado.</li>
+                        <li>Máximos y mínimos diarios: Útiles para calcular volatilidad.</li>
+                    </ul>
+                    <li>Tamaño: ~4000-5000 registros (dependiendo del rango de años).</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-chart-bar"></i>
+                Análisis y Resultados
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-title">Gráfica de tendencia histórica</div>
+                <div class="graph-container">
+                    <img src="img/estadistica/historico.png" alt="Gráfica de tendencia histórica del precio de Bitcoin" class="result-image">
+                    <div class="image-caption">
+                        Aquí tenemos una gráfica de tendencias en la que se puede apreciar el crecimiento que y los puntos de auge que ha tenido esta moneda virtual, siendo el pico más alto histórico de Bitcoin es 109.026,02 US$, el cual se alcanzó el 20 de enero de 2025.
+                    </div>
+                </div>
+                
+                <div class="content-title">Gráfica de tendencia con predicciones</div>
+                <div class="graph-container">
+                    <img src="img/estadistica/g1.png" alt="Gráfica de predicciones del modelo" class="result-image">
+                    <div class="image-caption">
+                        Esta es la gráfica de tendencia con las predicciones realizadas con la IA, en estas se observa que la IA modela unos precios bajos y una caída de Bitcoin, obviamente estos datos no son 100% confiables, ya que la tendencia y predicción de precios no solo se realizan con valores históricos, sino también con las tendencias populares o comentarios por socios claves o inversores.
+                    </div>
+                </div>
+                
+                <div class="content-title">Diagramas de velas</div>
+                <div class="graph-container">
+                    <img src="img/estadistica/g2.png" alt="Diagrama de velas del precio de Bitcoin" class="result-image">
+                    <div class="image-caption">
+                        Un gráfico de velas es una representación visual del movimiento del precio en un período determinado (ej: 1 día, 1 hora), mostrando cuatro datos clave: apertura, cierre, máximo y mínimo. Cada "vela" tiene un cuerpo (rectángulo) y mechas (líneas finas), que reflejan la lucha entre compradores y vendedores.
+                    </div>
+                </div>
+                <div class="content-text">
+                    <strong>¿Cómo se lee?</strong>
+                    <ul>
+                        <li>Cuerpo verde (o blanco): El precio subió (cierre > apertura).</li>
+                        <li>Cuerpo rojo (o negro): El precio bajó (cierre < apertura).</li>
+                    </ul>
+                    Se utiliza principalmente para Identificar patrones de comportamiento del mercado (tendencias, reversiones, indecisión) para tomar decisiones de compra/venta con mayor precisión. Esencial para el análisis técnico en trading de Bitcoin y otros activos.
+                </div>
+                
+                <div class="content-title">Diagrama Caja de Bigotes</div>
+                <div class="graph-container">
+                    <img src="img/estadistica/bigote.png" alt="Diagrama de caja y bigotes del precio de Bitcoin" class="result-image">
+                    <div class="image-caption">
+                        Eje Y: Representa el precio de Bitcoin en dólares estadounidenses (USD). Las cifras están en formato reducido: 1.8K = 1,800 USD (mínimo), 9.7K = 9,700 USD (percentil 25 o Q1), 35.7K = 35,700 USD (percentil 75 o Q3)
+                    </div>
+                </div>
+                <div class="content-text">
+                    <strong>Caja (boxplot):</strong>
+                    <ul>
+                        <li>Caja azul clara: Contiene el 50% central de los datos (entre Q1 y Q3).</li>
+                        <li>Línea dentro de la caja: Representa la mediana (valor central de los datos).</li>
+                        <li>Bigotes (líneas horizontales): Muestran la extensión de los datos que no son considerados outliers.</li>
+                        <li>Puntos fuera de los bigotes (rojos): Valores atípicos o outliers — precios inusuales, muy altos o bajos comparados con el resto.</li>
+                    </ul>
+                    
+                    <strong>Puntos azules:</strong>
+                    <ul>
+                        <li>Cada punto representa un valor individual del precio del Bitcoin.</li>
+                        <li>Se observa una alta densidad de puntos entre 0 y 40,000 USD, lo cual indica que la mayoría de los precios se ubicaron en ese rango.</li>
+                        <li>Hay algunos puntos dispersos más allá de los 70,000 USD — estos son precios excepcionalmente altos (outliers).</li>
+                    </ul>
+                    
+                    <strong>Puntos rojos (outliers altos):</strong>
+                    <ul>
+                        <li>Indican precios de Bitcoin significativamente mayores al valor típico, con varios superando los 80,000 USD e incluso llegando cerca de los 100,000 USD.</li>
+                        <li>Estos pueden representar picos históricos, burbujas de mercado o eventos anómalos.</li>
+                    </ul>
+                </div>
+                
+                <div class="content-title">Medidas de tendencia central</div>
+                <div class="graph-container">
+                    <img src="img/estadistica/tendencia.png" alt="Gráfico de medidas de tendencia central" class="result-image">
+                    <div class="image-caption">
+                        Aquí se encuentran los valores de tendencia media, mediana y moda, en donde se tienen los precios que a lo largo del tiempo han sido más comunes dentro de nuestra base de datos.
+                    </div>
+                </div>
+                <div class="content-text">
+                    Tenemos como media un precio de 21.916$ que es la media que ha mantenido el precio del bitcoin a lo largo de los tiempos pese a sus grandes picos dentro de la industria de las inversiones.
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Delimitaciones
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-title">Falta de Contexto del Mercado</div>
+                <div class="content-text">
+                    Dependencia exclusiva de datos numéricos: La IA no considera noticias, eventos regulatorios, halvings, o adopción institucional, que impactan fuertemente en el precio.
+                </div>
+                <div class="content-text">
+                    Ejemplo: Un tuit de Elon Musk en 2021 causó volatilidad extrema, pero el modelo no lo predeciría.
+                </div>
+                
+                <div class="content-title">Sensibilidad a Cambios Estructurales</div>
+                <div class="content-text">
+                    Incapacidad para adaptarse a "regímenes" nuevos: Si el mercado cambia (ej: Bitcoin pasa de ser especulativo a reserva de valor), el modelo basado en datos antiguos podría fallar.
+                </div>
+                
+                <div class="content-title">Problemas con Outliers y Eventos Extremos</div>
+                <div class="content-text">
+                    Mala generalización en crisis: Eventos como el colapso de FTX (2022) o pandemias generan anomalías que un modelo puramente estadístico no anticipa.
+                </div>
+                <div class="content-text">
+                    Los datos históricos subestiman la probabilidad de "cisnes negros".
+                </div>
+                
+                <div class="content-title">Aspectos que se podrían mejorar:</div>
+                <div class="content-text">
+                    <strong>Distribución de Pareto</strong><br>
+                    La distribución de Pareto es una distribución de probabilidad continua que se utiliza para modelar fenómenos en los que un pequeño número de causas son responsable de una gran parte del efecto, como la distribución de la riqueza o el tráfico en internet. Esta distribución se caracteriza por una cola pesada, lo que significa que los valores extremos son más probables de ocurrir que en una distribución normal.
+                </div>
+                
+                <div class="content-title">Función de densidad de probabilidad</div>
+                <div class="graph-container">
+                    <img src="img/estadistica/ecuacion 1.png" alt="Función de densidad de probabilidad de Pareto" class="result-image">
+                </div>
+                
+                <div class="content-title">Función de distribución acumulada</div>
+                <div class="graph-container">
+                    <img src="img/estadistica/grafica2.png" alt="Función de distribución acumulada de Pareto" class="result-image">
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-check-circle"></i>
+                Conclusiones
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-text">
+                    Este proyecto permitió explorar el uso de modelos estadísticos y de inteligencia artificial para analizar y predecir el comportamiento del precio de Bitcoin, una criptomoneda con alta volatilidad y comportamiento altamente impredecible.
+                </div>
+                
+                <div class="content-text">
+                    A partir del análisis de más de 4000 registros históricos y la aplicación de técnicas como la probabilidad condicional, el teorema de Bayes y el aprendizaje supervisado, se construyó un modelo capaz de identificar ciertas tendencias y comportamientos del mercado. Sin embargo, se evidenció que el modelo no es completamente preciso, debido a las grandes limitaciones inherentes al mercado de las criptomonedas, como:
+                </div>
+                
+                <ul>
+                    <li>Alta sensibilidad a noticias y eventos globales.</li>
+                    <li>Cambios bruscos de comportamiento (cisnes negros).</li>
+                    <li>Ausencia de contexto social, político o tecnológico en los datos utilizados.</li>
+                </ul>
+                
+                <div class="content-text">
+                    Asimismo, aunque se consideró la distribución de Pareto para modelar precios extremos, este aspecto aún requiere un mayor desarrollo.
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-book"></i>
+                Bibliografía
+            </h2>
+            
+            <div class="content-card">
+                <ul>
+                    <li>https://finance.yahoo.com/</li>
+                    <li>https://blog.kraz.ai/marketing/que-es-el-teorema-de-bayes-y-que-importancia-tiene-en-machine-learning/#:~:text=En%20Machine%20Learning%20se%20utilizan,de%20datos%20y%20probabilidades%20condicionales.</li>
+                    <li>https://www.investopedia.com/terms/b/bayes-theorem.asp</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-code"></i>
+                Anexos
+            </h2>
+            
+            <div class="content-card">
+                <div class="content-text">
+                    Enlace a recursos adicionales:
+                </div>
+                
+                <a href="https://matheuruales.github.io/estadistica.html" class="code-link" target="_blank">
+                    <i class="fas fa-external-link-alt"></i> Página de estadística del proyecto
+                </a>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 CRYPTO ANALITICS - Universidad Cooperativa de Colombia</p>
+        </footer>
+    </div>
+</body>
+</html>
